@@ -75,5 +75,8 @@ The Javascript portion of this project handles the button clicks on the header s
 This PHP program is backend processing only. it will read, add, and delete entries in the logreaderapp.json file.
 
 ### Sample Output
+#### Sort by Count
+![Sample Output Sort by Count](Sample_webpage_4.JPG)
 
-![Sample Output](Sample_webpage_4.JPG)
+#### Sort by Last Update
+![Sample Output Sort by Last Update](Sample_webpage_5.JPG)
