@@ -22,7 +22,7 @@ This is the initial PHP to call to load and display Mailenable logs. The call to
 
 Please see the link below. It will display the top 10 entries read from the 5 most recent logs (not necessarily the last 5 days!):
 
-http://ubuntu20desktop03.marty.local:8099/index.php?arg_entries=10&arg_numberoflogs=5
+https://ubuntu20desktop03.marty.local/index.php?arg_entries=10&arg_numberoflogs=5
 
 The index.php will instantiate a class from the mail_logreader.php script as well as the Geolocate API. Once these are set, the code will read the entries from the mail_logreader.php class. For each row read, it will retrieve the Geolocation information for the IP via the Geolocate API class. 
 
@@ -76,4 +76,4 @@ This PHP program is backend processing only. it will read, add, and delete entri
 
 ### Sample Output
 
-![Sample Output](/Mailenable_logreader/Sample_webpage_3.JPG)
+![Sample Output](Sample_webpage_4.JPG)
