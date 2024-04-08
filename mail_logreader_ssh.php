@@ -43,6 +43,7 @@ class cls_logdata
     $this->wrk_whitelist  = $JSONdata['whitelist'];
     $this->wrk_blacklist  = $JSONdata['blacklist'];
 
+    // The Encryption module is not required, but is an alternative to keeping the user name and password in the logreaderapp.json file.
     if ($this->app_pwd_key != '' and $this->app_user == '') {
       $file_name = '/home/ESIS/Encryption/basic_encryption_user.php';
       if (is_file($file_name)) {
@@ -57,7 +58,6 @@ class cls_logdata
       $work_cls_encryption->fct_password_verify();
       $this->app_user = $encryption_data_decoded['user'];
       $this->app_pwd = $work_cls_encryption->password;
-      //echo PHP_EOL . 'Encryption data: ' . var_dump($encryption_data_decoded) . PHP_EOL;
     }
   }
 
@@ -75,13 +75,13 @@ class cls_logdata
     $this->res_connection = ssh2_sftp($connection);
     //$file_list = scandir($this->ftp_method . $this->app_user .':' . $this->app_pwd . '@' .  $this->app_path );
     //$file_list = scandir("ssh2.sftp://".intval($sftp)."/C:\\");
-    ## THIS WORKS!!!!!  it looks like using intval does not work
-    $file_list = scandir("ssh2.sftp://{$this->res_connection}/{$this->app_path}");
+    ## THIS WORKS!!!!!  when enclosing variables in {}... it looks like using intval for connection does not work
+    $dir_list = scandir("ssh2.sftp://{$this->res_connection}/{$this->app_path}", SCANDIR_SORT_DESCENDING);
 
     # read each entry that contains a log file name.
-    foreach ($file_list as $direntry) {
-      if (substr($direntry, 0, 13) == 'SMTP-Activity') {
-        $this->fct_readfile($direntry);
+    foreach ($dir_list as $file_entry) {
+      if (substr($file_entry, 0, 13) == 'SMTP-Activity') {
+        $this->fct_readfile($file_entry);
         # Increment counter to jump out of loops
         $this->wrk_nbr_of_files_read++;
         # if the number of files read is equal to the argument,

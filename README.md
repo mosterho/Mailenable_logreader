@@ -9,7 +9,7 @@ This set of PHP programs will summarize the IP addresses with the highest number
 ## Details
 There are six parts to this project:
 1. index.php
-2. mail_logreader.php
+2. mail_logreader.php or mail_logreader_ssh.php
 3. logreaderapp.json
 4. mailenable.js
 5. mail_update_logreaderappjson.php
@@ -36,8 +36,10 @@ Once a "add/remove" button is clicked, hitting either the "sort by count" or "so
 
 Note: the "copy" button the far left should copy the IP address to the clipboard; it currently works for me, but I assume that's becasue I'm using HTTPS.
 
-### mail_logreader.php 
-This is the workhorse of this project. This will read the SMTP logs in the Mailenable system (FTP must be setup on the Mailenable system). 
+### mail_logreader.php or mail_logreader_ssh.php
+This is the workhorse of this project. This will read the SMTP logs in the Mailenable system.
+
+As the file names imply, the mail_logreader.php will read plain FTP (probably OK if your server is within your LAN), while mail_logreader_ssh.php uses SSH to connect to the server.
 
 The __construct will read the logreaderapp.json file. The JSON file contains three sections: path, whitelist, and blacklist. Please see the logreaderapp.json section for details.
 
@@ -51,22 +53,28 @@ The logreaderapp.json file contains the following:
 - whitelist: This contains the IP addresses to ignore, and;
 - blacklist: This contains the list of black listed IP addresses. You may not need any entries in this section of the JSON file; I use it to work with my load balancer/reverse proxy.
 
-A portion of my logreaderapp.json file looks like this (the IP addresses in the path and blacklist sections are changed):
+The logreaderapp.json file looks like this (the server and blacklist sections are changed). Note the "\\" for the the directory names when the path is on a Windows server:
 {
-  "path": "ftp://10.10.10.10/SMTP/",
+    "method": "ftp://",
+    "system": "mail.example.com",
+    "path": "C:\\Program Files (x86)\\Mail Enable\\Logging\\SMTP\\",
+    "user": "",
+    "pwd": "",
+    "pwd_key": "/home/ESIS/Encryption/mailenable_logreader/key01.json",
     "whitelist": [
-    "10.0.0.0/8",
-    "10.126.26.0/24",
-    "127.0.0.0/24",
-    "172.16.0.0/16",
-    "192.168.0.0/24",
-    "192.168.1.0/24"
-  ],
-  "blacklist": [
-    "999.888.777.0/24",
-    "999.888.666.0/24"
-  ]
+        "10.0.0.0/8",
+        "10.3.0.0/24",
+        "10.126.26.0/24",
+        "127.0.0.0/24",
+        "172.16.0.0/16",
+        "192.168.0.0/24",
+        "192.168.1.0/24"
+    ],
+    "blacklist": [
+        "123.456.789.0/24"
+    ]
 }
+
 
 ### mailenable.js
 The Javascript portion of this project handles the button clicks on the header section and detail lines. It also calls the mail_update_logreaderappjson.php program to update the logreaderapp.json file based on IP button that is clicked.

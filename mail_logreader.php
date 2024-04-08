@@ -56,7 +56,6 @@ class cls_logdata
       $work_cls_encryption->fct_password_verify();
       $this->app_user = $encryption_data_decoded['user'];
       $this->app_pwd = $work_cls_encryption->password;
-      //echo PHP_EOL . 'Encryption data: ' . var_dump($encryption_data_decoded) . PHP_EOL;
     }
   }
 
@@ -68,29 +67,13 @@ class cls_logdata
   {
     $this->nbr_entryfiles = $argentryfiles;
 
-    ## Using ftp_ssl_conn is tricky, need firewall setup correctly on server due to control and data channel, etc.
+    ## Using ftp_ssl_connect is tricky, need firewall setup correctly on server due to control and data channels, 
+    ## including random ports, etc.
     ## also set app_path correctly (/SMTP/SMTP-Activity*.log)
     $ftp_conn = ftp_ssl_connect($this->ftp_system);
     $ftp_conn_result = ftp_login($ftp_conn, $this->app_user, $this->app_pwd);
     ftp_pasv($ftp_conn, true);
-    //print('made it past ftp_pasv...');
     $file_list = ftp_nlist($ftp_conn, $this->app_path);
-
-    // Much of the following is taken from PHP.NET SSH2 functions reference supplied by programmers
-    //$connection = ssh2_connect($this->ftp_system, 22);
-    //ssh2_auth_password($connection, $this->app_user, $this->app_pwd);
-    //$sftp = ssh2_sftp($connection);
-
-    //$file_list = fopen($this->ftp_method . intval($sftp) . '"' .$this->app_path . '"', 'r');
-    //$file_list = fopen($this->ftp_method . '"' .$this->app_path . '"', 'r');
-    //$file_list = fopen($this->ftp_method . $this->app_user .':' . $this->app_pwd . '@' .  $this->app_path , 'r');
-    //$file_list = fopen($this->ftp_method . intval($sftp) . '"'. $this->app_path . '"', 'r');
-    //$file_list = scandir($this->ftp_method . intval($sftp) . $this->app_path );
-    //$file_list = scandir($this->ftp_method . $this->app_user .':' . $this->app_pwd . '@' .  $this->app_path );
-    //$file_list = scandir("ssh2_sftp://".intval($sftp)."/C:\\");
-
-    //var_dump($connection, '  ', $sftp);
-    //var_dump($file_list);
 
     # read each entry that contains a log file name.
     foreach ($file_list as $direntry) {
