@@ -21,6 +21,7 @@ class cls_logdata
   public $app_user;
   public $app_pwd;
   public $app_pwd_key;
+  public $res_connection;
   public $nbr_entryfiles = 0;
   public $wrk_whitelist;
   public $wrk_blacklist;
@@ -68,39 +69,26 @@ class cls_logdata
   {
     $this->nbr_entryfiles = $argentryfiles;
 
-    ## Using ftp_ssl_conn is tricky, need firewall setup correctly on server due to control and data channel, etc.
-    ## also set app_path correctly (/SMTP/SMTP-Activity*.log)
-    $ftp_conn = ftp_ssl_connect($this->ftp_system);
-    $ftp_conn_result = ftp_login($ftp_conn, $this->app_user, $this->app_pwd);
-    ftp_pasv($ftp_conn, true);
-    //print('made it past ftp_pasv...');
-    $file_list = ftp_nlist($ftp_conn, $this->app_path);
-
     // Much of the following is taken from PHP.NET SSH2 functions reference supplied by programmers
-    //$connection = ssh2_connect($this->ftp_system, 22);
-    //ssh2_auth_password($connection, $this->app_user, $this->app_pwd);
-    //$sftp = ssh2_sftp($connection);
-
-    //$file_list = fopen($this->ftp_method . intval($sftp) . '"' .$this->app_path . '"', 'r');
-    //$file_list = fopen($this->ftp_method . '"' .$this->app_path . '"', 'r');
-    //$file_list = fopen($this->ftp_method . $this->app_user .':' . $this->app_pwd . '@' .  $this->app_path , 'r');
-    //$file_list = fopen($this->ftp_method . intval($sftp) . '"'. $this->app_path . '"', 'r');
-    //$file_list = scandir($this->ftp_method . intval($sftp) . $this->app_path );
+    $connection = ssh2_connect($this->ftp_system, 22);
+    ssh2_auth_password($connection, $this->app_user, $this->app_pwd);
+    $this->res_connection = ssh2_sftp($connection);
     //$file_list = scandir($this->ftp_method . $this->app_user .':' . $this->app_pwd . '@' .  $this->app_path );
-    //$file_list = scandir("ssh2_sftp://".intval($sftp)."/C:\\");
-
-    //var_dump($connection, '  ', $sftp);
-    //var_dump($file_list);
+    //$file_list = scandir("ssh2.sftp://".intval($sftp)."/C:\\");
+    ## THIS WORKS!!!!!  it looks like using intval does not work
+    $file_list = scandir("ssh2.sftp://{$this->res_connection}/{$this->app_path}");
 
     # read each entry that contains a log file name.
     foreach ($file_list as $direntry) {
-      $this->fct_readfile($direntry);
-      # Increment counter to jump out of loops
-      $this->wrk_nbr_of_files_read++;
-      # if the number of files read is equal to the argument,
-      # break out of foreach loop
-      if ($this->wrk_nbr_of_files_read >= $this->nbr_entryfiles) {
-        break;
+      if (substr($direntry, 0, 13) == 'SMTP-Activity') {
+        $this->fct_readfile($direntry);
+        # Increment counter to jump out of loops
+        $this->wrk_nbr_of_files_read++;
+        # if the number of files read is equal to the argument,
+        # break out of foreach loop
+        if ($this->wrk_nbr_of_files_read >= $this->nbr_entryfiles) {
+          break;
+        }
       }
     }
 
@@ -124,11 +112,8 @@ class cls_logdata
   function fct_readfile($arg_file_input)
   {
     $const_tab = chr(0x09);  // Tab key (not really a constant variable)
-    ## create connection for file open, for example:
-    ## ftps://user:password@servername/ftp_folder/SMTP-Activity-240402.log
-    $work_connect = $this->ftp_method . $this->app_user . ':' . $this->app_pwd . '@' . $this->ftp_system . $arg_file_input;
-    //echo $work_connect.'<br>';
-    $myfile = fopen($work_connect, "r") or die("Unable to open " . $work_connect . " file!");
+    ## create connection for file open
+    $myfile = fopen("ssh2.sftp://{$this->res_connection}/{$this->app_path}{$arg_file_input}", "r");
     while (!feof($myfile)) {
       $thisline = fgets($myfile);
       $work_explode = explode($const_tab, $thisline);
@@ -186,7 +171,6 @@ class cls_logdata
 ### Instantiate a new class. Call the function that reads the directory entries.
 ### The class will keep track of the array data.
 //$cls_logs = new cls_logdata();
-//$cls_logs->fct_readdir(5, 10);
+//$cls_logs->fct_readdir();
 //var_dump($cls_logs->array_data);
-
 ?>

@@ -9,7 +9,7 @@
 
 class cls_logreaderapp
 {
-    public $wrk_IP = '';
+    public $wrk_IP = '';  ## In theory, could blacklist a LAN IP (192.168.1.1)
     public $wrk_action = '';
     public $logfile = 'logreaderapp.json';
     public $parm_error_message = '';
@@ -17,11 +17,11 @@ class cls_logreaderapp
     public $wrk_JSON_encode_filedata;
     public $wrk_blacklist;
 
-    function __construct($parm_IP = '', $parm_action = '')
+    function __construct($parm_IP = '', $parm_action = 'read')
     {
         $this->wrk_IP = $parm_IP;
         $this->wrk_action = $parm_action;
-        if ($this->wrk_IP == '' and $this->wrk_action != 'read' or ($this->wrk_IP != '' and $this->wrk_action != 'read' and $this->wrk_action != 'add' and $this->wrk_action != 'delete')) {
+        if (($this->wrk_IP == '' and $this->wrk_action != 'read') or ($this->wrk_IP != '' and $this->wrk_action != 'read' and $this->wrk_action != 'add' and $this->wrk_action != 'delete')) {
             $this->parm_error_message = 'Issue with arguments passed to this __construct. File will be read and data placed into class/array';
         }
         $this->fct_read_file();
@@ -64,10 +64,15 @@ class cls_logreaderapp
 
 if (isset($_GET['arg_IP'])) {
     $wrk_IP = $_GET['arg_IP'];
+} else {
+    $wrk_IP = '';
 }
 if (isset($_GET['arg_action'])) {
     $wrk_action = $_GET['arg_action'];
+} else {
+    $wrk_action = '';
 }
+
 
 $class_logreaderapp = new cls_logreaderapp($wrk_IP, $wrk_action);
 

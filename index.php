@@ -1,6 +1,6 @@
 <?php
 
-include 'mail_logreader.php';
+include 'mail_logreader_ssh.php';
 include '/home/ESIS/GeoLocate/geolocate_API.php';
 
 ## Set the default "button hit" to sort by count descending (number of hits).
@@ -8,11 +8,22 @@ include '/home/ESIS/GeoLocate/geolocate_API.php';
 ## in the number of IPs to display or logs to read.
 ## Check if the "sort by date" button was pressed on a prevously rendered page.
 $button_hit = 'btn-sortbycount';
-$work_logentries = $_GET['arg_numberoflogs'];
-$work_IPS = $_GET['arg_entries'];
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    if ($_POST['btn-sortbydate']) {
-        $button_hit = 'btn-sortbydate';
+if (isset($_GET['arg_numberoflogs'])) {
+    $work_logentries = $_GET['arg_numberoflogs'];
+} else {
+    $work_logentries = 5;
+}
+if (isset($_GET['arg_entries'])) {
+    $work_IPS = $_GET['arg_entries'];
+} else {
+    $work_IPS = 10;
+}
+
+if (isset($_SERVER["REQUEST_METHOD"])) {
+    if ($_SERVER["REQUEST_METHOD"] == "POST") {
+        if ($_POST['btn-sortbydate']) {
+            $button_hit = 'btn-sortbydate';
+        }
     }
 }
 

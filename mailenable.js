@@ -26,8 +26,26 @@ function fct_JSON_update(parm_IP, parm_adddelete) {
   }
   xhttp.open("GET", work_xhttp_tosend);
   xhttp.send();
+
+
+  const kemplb = new XMLHttpRequest();
+  //work_xhttp_tosend = 'https://10.126.26.136';
+  //work_xhttp_tosend = 'https://bal:gzK$9yZPn^XoTdKV@10.126.26.136';
+  //work_xhttp_arglist = '/access/aclcontrol?add=black&addr=' + parm_IP;
+  work_xhttp_tosend = 'mail_update_kemplb.php';
+  work_xhttp_tosend += work_xhttp_arglist;
+  kemplb.onload = function () {
+    work_xhttp_responseText = this.responseText;
+    console.log(work_xhttp_responseText);
+    work_response_headers = this.getAllResponseHeaders();
+    console.log(work_response_headers);
+  }
+  kemplb.open("GET", work_xhttp_tosend);
+  //kemplb.setRequestHeader('Access-Control-Allow-Origin', '*');
+  kemplb.send();
+
 }
- 
+
 function fct_button_click_copyIP(parm_IP) {
   // Get the IP address
   let wrk_button = "IP-" + parm_IP;
