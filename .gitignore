@@ -1,3 +1,5 @@
 .gitignore
 logreaderapp.json
 index_template.html
+mail_logreader.php
+mail_logreader_ssh.php

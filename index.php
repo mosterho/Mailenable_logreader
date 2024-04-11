@@ -1,6 +1,6 @@
 <?php
 
-include 'mail_logreader_ssh.php';
+include 'mail_logreader_v2.php';
 include '/home/ESIS/GeoLocate/geolocate_API.php';
 
 ## Set the default "button hit" to sort by count descending (number of hits).

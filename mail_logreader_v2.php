@@ -1,10 +1,10 @@
 <?php
 
 ###########################################################################
-### MAIL log reader (backend processing)
+### MAIL log reader (backend processing)  Version 2
 ### This script will read the mail logs that contain TCPIP data
 ### and summarize the external IP addresses with the most TCPIP hits
-### The results are placed in an associative array in the class
+### The results are placed in an associative array in the class as follows:
 ### key: IP address  data: {count, last update date, blacklist flag}
 ###########################################################################
 
@@ -27,7 +27,6 @@ class cls_logdata
   public $wrk_blacklist;
   public $wrk_nbr_of_files_read = 0;
 
-
   ### __construct function of class to read the JSON file
   ### and setup application variables.
   function __construct()
@@ -43,7 +42,8 @@ class cls_logdata
     $this->wrk_whitelist  = $JSONdata['whitelist'];
     $this->wrk_blacklist  = $JSONdata['blacklist'];
 
-    // The Encryption module is not required, but is an alternative to keeping the user name and password in the logreaderapp.json file.
+    ## The Encryption module is not required, 
+    ## This is side project I am working on to keep the user and password in the logreaderapp.json file, but the password hash in a separate key file.
     if ($this->app_pwd_key != '' and $this->app_user == '') {
       $file_name = '/home/ESIS/Encryption/basic_encryption_user.php';
       if (is_file($file_name)) {
@@ -59,6 +59,7 @@ class cls_logdata
       $this->app_user = $encryption_data_decoded['user'];
       $this->app_pwd = $work_cls_encryption->password;
     }
+    ##  End of Encryption module (testing only)
   }
 
   ### Function to read the directory share to obtain the log files to read.
@@ -69,23 +70,32 @@ class cls_logdata
   {
     $this->nbr_entryfiles = $argentryfiles;
 
-    ## Using ftp_ssl_connect is tricky, need firewall setup correctly on server due to control and data channels, 
-    ## including random ports, etc.
-    ## also set app_path correctly (/SMTP/SMTP-Activity*.log)
-    $ftp_conn = ftp_ssl_connect($this->ftp_system);
-    $ftp_conn_result = ftp_login($ftp_conn, $this->app_user, $this->app_pwd);
-    ftp_pasv($ftp_conn, true);
-    $file_list = ftp_nlist($ftp_conn, $this->app_path);
+    if ($this->ftp_method == 'ssh2.sftp://') {
+      $connection = ssh2_connect($this->ftp_system, 22);
+      ssh2_auth_password($connection, $this->app_user, $this->app_pwd);
+      $this->res_connection = ssh2_sftp($connection);
+      ## THIS WORKS when enclosing variables in {}... it looks like using intval for the connection does not work
+      $dir_list = scandir("{$this->ftp_method}{$this->res_connection}/{$this->app_path}", SCANDIR_SORT_DESCENDING);
+    } elseif ($this->ftp_method == 'ftps://') {
+      ## Using ftp_ssl_connect is tricky, need firewall setup correctly on server due to control and data channels, 
+      ## including random ports, etc.
+      $ftp_conn = ftp_ssl_connect($this->ftp_system);
+      $ftp_conn_result = ftp_login($ftp_conn, $this->app_user, $this->app_pwd);
+      ftp_pasv($ftp_conn, true);
+      $dir_list = scandir("{$this->ftp_method}{$this->app_user}:{$this->app_pwd}@{$this->ftp_system}/{$this->app_path}", SCANDIR_SORT_DESCENDING);
+    }
 
     # read each entry that contains a log file name.
-    foreach ($file_list as $direntry) {
-      $this->fct_readfile($direntry);
-      # Increment counter to jump out of loops
-      $this->wrk_nbr_of_files_read++;
-      # if the number of files read is equal to the argument,
-      # break out of foreach loop
-      if ($this->wrk_nbr_of_files_read >= $this->nbr_entryfiles) {
-        break;
+    foreach ($dir_list as $file_entry) {
+      if (substr($file_entry, 0, 13) == 'SMTP-Activity') {
+        $this->fct_readfile($file_entry);
+        # Increment counter to jump out of loops
+        $this->wrk_nbr_of_files_read++;
+        # if the number of files read is equal to the argument,
+        # break out of foreach loop
+        if ($this->wrk_nbr_of_files_read >= $this->nbr_entryfiles) {
+          break;
+        }
       }
     }
 
@@ -109,11 +119,13 @@ class cls_logdata
   function fct_readfile($arg_file_input)
   {
     $const_tab = chr(0x09);  // Tab key (not really a constant variable)
-    ## create connection for file open, for example:
-    ## ftps://user:password@servername/ftp_folder/SMTP-Activity-240402.log
-    $work_connect = $this->ftp_method . $this->app_user . ':' . $this->app_pwd . '@' . $this->ftp_system . $arg_file_input;
-    //echo $work_connect.'<br>';
-    $myfile = fopen($work_connect, "r") or die("Unable to open " . $work_connect . " file!");
+    $connection_string = $this->ftp_method . $this->app_user . ':' . $this->app_pwd . '@' . $this->ftp_system . '/' . $this->app_path;
+    ## may need two different fopen functions based on ftp_method
+    if ($this->ftp_method == 'ssh2.sftp://') {
+      $myfile = fopen("{$this->ftp_method}{$this->res_connection}/{$this->app_path}{$arg_file_input}", "r");
+    } elseif ($this->ftp_method == 'ftps://') {
+      $myfile = fopen($connection_string . '/' . $arg_file_input, "r");
+    }
     while (!feof($myfile)) {
       $thisline = fgets($myfile);
       $work_explode = explode($const_tab, $thisline);
@@ -170,7 +182,10 @@ class cls_logdata
 
 ### Instantiate a new class. Call the function that reads the directory entries.
 ### The class will keep track of the array data.
-$cls_logs = new cls_logdata();
-$cls_logs->fct_readdir();
-var_dump($cls_logs->array_data);
+if (php_sapi_name() == 'cli') {
+  $cls_logs = new cls_logdata();
+  $cls_logs->fct_readdir();
+  print "within mainline of V2, ";
+  var_dump($cls_logs->array_data);
+}
 ?>
