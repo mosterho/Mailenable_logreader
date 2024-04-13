@@ -45,7 +45,7 @@ class cls_logdata
     ## The Encryption module is not required, 
     ## This is side project I am working on to keep the user and password in the logreaderapp.json file, but the password hash in a separate key file.
     if ($this->app_pwd_key != '' and $this->app_user == '') {
-      $file_name = '/home/ESIS/Encryption/basic_encryption_user.php';
+      $file_name = '/home/ESIS/Encryption/basic_password_hash.php';
       if (is_file($file_name)) {
         include $file_name;
       } else {
@@ -54,10 +54,10 @@ class cls_logdata
       }
       $encryption_data = file_get_contents($this->app_pwd_key);
       $encryption_data_decoded = json_decode($encryption_data, true);
-      $work_cls_encryption = new cls_encryption($encryption_data_decoded['password'], $encryption_data_decoded['hash']);
-      $work_cls_encryption->fct_password_verify();
+      $work_cls_hash = new cls_hash($encryption_data_decoded['password'], $encryption_data_decoded['hash']);
+      $work_cls_hash->fct_password_verify();
       $this->app_user = $encryption_data_decoded['user'];
-      $this->app_pwd = $work_cls_encryption->password;
+      $this->app_pwd = $work_cls_hash->password;
     }
     ##  End of Encryption module (testing only)
   }
