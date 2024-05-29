@@ -11,7 +11,7 @@ class cls_logreaderapp
 {
     public $wrk_IP = '';  ## In theory, could blacklist a LAN IP (192.168.1.1)
     public $wrk_action = '';
-    public $logfile = 'logreaderapp.json';
+    public $logfile = '/home/ESIS/dataonly/mailenable_logreader/logreaderapp.json';
     public $parm_error_message = '';
     public $wrk_JSON_decode_filedata;
     public $wrk_JSON_encode_filedata;

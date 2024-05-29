@@ -31,7 +31,7 @@ class cls_logdata
   ### and setup application variables.
   function __construct()
   {
-    $jsonstuff = file_get_contents("logreaderapp.json");
+    $jsonstuff = file_get_contents("/home/ESIS/dataonly/mailenable_logreader/logreaderapp.json");
     $JSONdata = json_decode($jsonstuff, True);  # "True" will generate an associative array from JSON data
     $this->ftp_method     = $JSONdata['method'];
     $this->ftp_system     = $JSONdata['system'];
